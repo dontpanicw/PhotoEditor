@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Processor</title>
+    <link rel="stylesheet" href="/static/style.css?v=3">
+</head>
+<body>
+    <div class="container">
+        <h1>🖼️ Image Processor</h1>
+        
+        <div class="upload-section">
+            <h2>Загрузить изображение</h2>
+            <form id="uploadForm">
+                <input type="file" id="imageInput" accept="image/*" required>
+                
+                <div class="actions-section">
+                    <h3>Выберите действия:</h3>
+                    <label>
+                        <input type="checkbox" name="action" value="Resize" checked>
+                        Изменить размер (1600x900)
+                    </label>
+                    <label>
+                        <input type="checkbox" name="action" value="Watermark">
+                        Добавить водяной знак
+                    </label>
+                    <label>
+                        <input type="checkbox" name="action" value="Miniature_generate">
+                        Создать миниатюру
+                    </label>
+                </div>
+                
+                <button type="submit">Загрузить и обработать</button>
+            </form>
+            <div id="uploadStatus" class="status"></div>
+        </div>
+
+        <div class="images-section">
+            <h2>Мои изображения</h2>
+            <button onclick="localStorage.clear(); location.reload();" style="margin-bottom: 10px; background: #dc3545;">
+                🗑️ Очистить историю
+            </button>
+            <div id="imagesList"></div>
+        </div>
+    </div>
+
+    <script src="/static/app.js?v=3"></script>
+</body>
+</html>
