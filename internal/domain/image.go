@@ -4,6 +4,7 @@ const (
 	ResizeAction            = "Resize"
 	MiniatureGenerateAction = "Miniature_generate"
 	WatermarkAction         = "Watermark"
+	GrayscaleAction         = "Grayscale"
 
 	ImageStatusPending = "Pending"
 	ImageStatusDone    = "Done"

@@ -193,6 +193,9 @@ func (c *Consumer) applyAction(action string, imageData []byte) ([]byte, error) 
 	case domain.MiniatureGenerateAction:
 		return processor.GenerateSmartThumbnail(imageData, 1600, 900)
 
+	case domain.GrayscaleAction:
+		return processor.ApplyGrayscale(imageData)
+
 	default:
 		return nil, fmt.Errorf("unknown action: %s", action)
 	}

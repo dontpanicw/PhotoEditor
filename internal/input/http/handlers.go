@@ -123,6 +123,7 @@ func isValidAction(action string) bool {
 		domain.ResizeAction,
 		domain.MiniatureGenerateAction,
 		domain.WatermarkAction,
+		domain.GrayscaleAction,
 	}
 	for _, valid := range validActions {
 		if action == valid {

@@ -76,3 +76,27 @@ func AddTextWatermark(file []byte, text string) ([]byte, error) {
 	log.Printf("Водяной знак обработан (упрощенная версия без текста)")
 	return newImage, nil
 }
+
+// ApplyGrayscale применяет черно-белый фильтр к изображению
+func ApplyGrayscale(file []byte) ([]byte, error) {
+	img := bimg.NewImage(file)
+	size, err := img.Size()
+	if err != nil {
+		return nil, fmt.Errorf("не удалось получить размеры изображения: %v", err)
+	}
+
+	log.Printf("Применение ч/б фильтра к изображению %dx%d", size.Width, size.Height)
+
+	options := bimg.Options{
+		Interpretation: bimg.InterpretationBW, // Черно-белый режим
+		Quality:        90,
+	}
+
+	newImage, err := img.Process(options)
+	if err != nil {
+		return nil, fmt.Errorf("ошибка применения ч/б фильтра: %v", err)
+	}
+
+	log.Printf("Ч/б фильтр успешно применен")
+	return newImage, nil
+}
