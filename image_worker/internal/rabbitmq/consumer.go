@@ -124,7 +124,12 @@ func (c *Consumer) processMessage(ctx context.Context, msg kafka.Message) error 
 	if err != nil {
 		return fmt.Errorf("failed to get object from MinIO: %w", err)
 	}
-	defer originalFile.Close()
+	defer func() {
+		err = originalFile.Close()
+		if err != nil {
+			log.Printf("Failed to close original file: %v", err)
+		}
+	}()
 
 	// 3. Читаем весь файл в []byte
 	imageData, err := io.ReadAll(originalFile)

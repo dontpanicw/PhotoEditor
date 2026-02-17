@@ -33,14 +33,38 @@ func TestNewConfig_Defaults(t *testing.T) {
 
 func TestNewConfig_CustomValues(t *testing.T) {
 	os.Clearenv()
-	os.Setenv("HTTP_PORT", "9090")
-	os.Setenv("MINIO_ENDPOINT", "minio:9000")
-	os.Setenv("MASTER_DSN", "postgres://test")
-	os.Setenv("BUCKET_NAME", "test-bucket")
-	os.Setenv("MINIO_ROOT_USER", "testuser")
-	os.Setenv("MINIO_ROOT_PASSWORD", "testpass")
-	os.Setenv("KAFKA_TASK_TOPIC", "custom-topic")
-	os.Setenv("KAFKA_BROKERS", "kafka:9092")
+	err := os.Setenv("HTTP_PORT", "9090")
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	err = os.Setenv("MINIO_ENDPOINT", "minio:9000")
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	err = os.Setenv("MASTER_DSN", "postgres://test")
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	err = os.Setenv("BUCKET_NAME", "test-bucket")
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	err = os.Setenv("MINIO_ROOT_USER", "testuser")
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	err = os.Setenv("MINIO_ROOT_PASSWORD", "testpass")
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	err = os.Setenv("KAFKA_TASK_TOPIC", "custom-topic")
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	err = os.Setenv("KAFKA_BROKERS", "kafka:9092")
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
 
 	cfg, err := NewConfig()
 	if err != nil {
@@ -82,7 +106,10 @@ func TestNewConfig_PortFormatting(t *testing.T) {
 		t.Run(tt.input, func(t *testing.T) {
 			os.Clearenv()
 			if tt.input != "" {
-				os.Setenv("HTTP_PORT", tt.input)
+				err := os.Setenv("HTTP_PORT", tt.input)
+				if err != nil {
+					t.Fatalf("Expected no error, got %v", err)
+				}
 			}
 
 			cfg, err := NewConfig()

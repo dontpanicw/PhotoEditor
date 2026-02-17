@@ -36,7 +36,12 @@ func Start(cfg *config.Config) error {
 	if err != nil {
 		return fmt.Errorf("failed to connect to database after 10 attempts: %w", err)
 	}
-	defer db.Close()
+	defer func() {
+		err = db.Close()
+		if err != nil {
+			log.Printf("Failed to close database: %v", err)
+		}
+	}()
 	log.Print("Connected to PostgreSQL")
 
 	if err := migrations.Migrate(db); err != nil {

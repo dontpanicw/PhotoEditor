@@ -12,10 +12,10 @@ import (
 
 // Mock implementations
 type mockRepositoryDB struct {
-	saveObjectFunc         func(ctx context.Context, image domain.Image) error
-	getObjectByIDFunc      func(ctx context.Context, id string) (*domain.Image, error)
-	deleteObjectByIDFunc   func(ctx context.Context, id string) error
-	updateProcessedFunc    func(ctx context.Context, id string, key string) error
+	saveObjectFunc       func(ctx context.Context, image domain.Image) error
+	getObjectByIDFunc    func(ctx context.Context, id string) (*domain.Image, error)
+	deleteObjectByIDFunc func(ctx context.Context, id string) error
+	updateProcessedFunc  func(ctx context.Context, id string, key string) error
 }
 
 func (m *mockRepositoryDB) SaveObject(ctx context.Context, image domain.Image) error {
@@ -231,7 +231,12 @@ func TestGetObjectByID_Success(t *testing.T) {
 	if reader == nil {
 		t.Fatal("Expected reader, got nil")
 	}
-	defer reader.Close()
+	defer func(reader io.ReadCloser) {
+		err := reader.Close()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}(reader)
 }
 
 func TestGetObjectByID_PendingStatus(t *testing.T) {

@@ -37,7 +37,12 @@ func NewProducer(cfg *config.Config) *Producer {
 			log.Printf("Failed to dial Kafka for topic creation: %v", err)
 			return
 		}
-		defer conn.Close()
+		defer func() {
+			err = conn.Close()
+			if err != nil {
+				log.Printf("Failed to close Kafka connection: %v", err)
+			}
+		}()
 
 		controller, err := conn.Controller()
 		if err != nil {
@@ -50,7 +55,12 @@ func NewProducer(cfg *config.Config) *Producer {
 			log.Printf("Failed to dial Kafka controller: %v", err)
 			return
 		}
-		defer controllerConn.Close()
+		defer func() {
+			err = controllerConn.Close()
+			if err != nil {
+				log.Printf("Failed to close Kafka connection: %v", err)
+			}
+		}()
 
 		topicConfigs := []kafka.TopicConfig{
 			{

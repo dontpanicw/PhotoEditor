@@ -16,10 +16,10 @@ import (
 )
 
 type mockUsecases struct {
-	createObjectFunc    func(ctx context.Context, image domain.Image, r io.Reader, size int64, contentType string) (string, error)
-	getObjectByIDFunc   func(ctx context.Context, id string) (io.ReadCloser, error)
-	getImageStatusFunc  func(ctx context.Context, id string) (*domain.Image, error)
-	removeObjectFunc    func(ctx context.Context, id string) error
+	createObjectFunc   func(ctx context.Context, image domain.Image, r io.Reader, size int64, contentType string) (string, error)
+	getObjectByIDFunc  func(ctx context.Context, id string) (io.ReadCloser, error)
+	getImageStatusFunc func(ctx context.Context, id string) (*domain.Image, error)
+	removeObjectFunc   func(ctx context.Context, id string) error
 }
 
 func (m *mockUsecases) InitMinio() error {
@@ -60,11 +60,20 @@ func TestUploadImage_Success(t *testing.T) {
 
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
-	
+
 	part, _ := writer.CreateFormFile("image", "test.jpg")
-	part.Write([]byte("fake image data"))
-	writer.WriteField("actions", "Resize")
-	writer.Close()
+	_, err := part.Write([]byte("fake image data"))
+	if err != nil {
+		return
+	}
+	err = writer.WriteField("actions", "Resize")
+	if err != nil {
+		return
+	}
+	err = writer.Close()
+	if err != nil {
+		return
+	}
 
 	req := httptest.NewRequest("POST", "/upload", body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
@@ -77,7 +86,10 @@ func TestUploadImage_Success(t *testing.T) {
 	}
 
 	var response map[string]string
-	json.NewDecoder(w.Body).Decode(&response)
+	err = json.NewDecoder(w.Body).Decode(&response)
+	if err != nil {
+		return
+	}
 
 	if response["id"] == "" {
 		t.Error("Expected non-empty id in response")
@@ -94,7 +106,10 @@ func TestUploadImage_NoFile(t *testing.T) {
 
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
-	writer.Close()
+	err := writer.Close()
+	if err != nil {
+		return
+	}
 
 	req := httptest.NewRequest("POST", "/upload", body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
@@ -160,7 +175,10 @@ func TestGetImageStatus_Success(t *testing.T) {
 	}
 
 	var response domain.Image
-	json.NewDecoder(w.Body).Decode(&response)
+	err := json.NewDecoder(w.Body).Decode(&response)
+	if err != nil {
+		return
+	}
 
 	if response.Id != "test-id" {
 		t.Errorf("Expected id test-id, got %s", response.Id)

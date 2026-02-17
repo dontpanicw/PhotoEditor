@@ -45,19 +45,16 @@ func NewConfig() (*Config, error) {
 			cfg.HTTPPort = httpPort
 		}
 	}
-	
+
 	minioEndpoint := os.Getenv("MINIO_ENDPOINT")
 	if minioEndpoint != "" {
 		cfg.MinioEndpoint = minioEndpoint
 	}
-	
+
 	masterDSN := os.Getenv("MASTER_DSN")
 	if masterDSN != "" {
 		cfg.MasterDSN = masterDSN
 	}
-	slaveDSNs := make([]string, 0)
-	slaveDSN := os.Getenv("SLAVE_DSN")
-	slaveDSNs = append(slaveDSNs, slaveDSN)
 
 	bucketName := os.Getenv("BUCKET_NAME")
 	if bucketName != "" {
@@ -77,7 +74,7 @@ func NewConfig() (*Config, error) {
 	} else {
 		cfg.KafkaTaskTopic = "image-tasks"
 	}
-	
+
 	kafkaBrokers := os.Getenv("KAFKA_BROKERS")
 	if kafkaBrokers != "" {
 		cfg.KafkaBrokers = []string{kafkaBrokers}

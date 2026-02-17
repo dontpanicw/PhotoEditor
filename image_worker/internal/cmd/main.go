@@ -27,7 +27,7 @@ func main() {
 
 	// Подключаемся к PostgreSQL с retry
 	var db *sql.DB
-	
+
 	for i := 0; i < 10; i++ {
 		db, err = sql.Open("postgres", cfg.MasterDSN)
 		if err == nil {
@@ -39,11 +39,16 @@ func main() {
 		log.Printf("Waiting for PostgreSQL... (attempt %d/10): %v", i+1, err)
 		time.Sleep(3 * time.Second)
 	}
-	
+
 	if err != nil {
 		log.Fatalf("Failed to connect to database after 10 attempts: %v", err)
 	}
-	defer db.Close()
+	defer func() {
+		err = db.Close()
+		if err != nil {
+			log.Fatalf("Failed to close database connection: %v", err)
+		}
+	}()
 	log.Println("Connected to PostgreSQL")
 
 	// Инициализируем репозитории

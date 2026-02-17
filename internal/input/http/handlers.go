@@ -3,6 +3,7 @@ package http
 import (
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 
 	"github.com/dontpanicw/ImageProcessor/internal/domain"
@@ -32,7 +33,12 @@ func (h *Handler) UploadImage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to get image file", http.StatusBadRequest)
 		return
 	}
-	defer file.Close()
+	defer func() {
+		err = file.Close()
+		if err != nil {
+			log.Printf("Failed to close Kafka connection: %v", err)
+		}
+	}()
 
 	// Получаем действия из формы (например: "resize,watermark")
 	actionsStr := r.FormValue("actions")
@@ -68,11 +74,14 @@ func (h *Handler) UploadImage(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]string{
+	err = json.NewEncoder(w).Encode(map[string]string{
 		"id":      imageID,
 		"status":  domain.ImageStatusPending,
 		"message": "Image uploaded successfully",
 	})
+	if err != nil {
+		http.Error(w, "Failed to upload image", http.StatusInternalServerError)
+	}
 }
 
 // splitAndTrim разбивает строку по разделителю и убирает пробелы
@@ -146,7 +155,12 @@ func (h *Handler) GetImage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Image not found", http.StatusNotFound)
 		return
 	}
-	defer reader.Close()
+	defer func(reader io.ReadCloser) {
+		err := reader.Close()
+		if err != nil {
+			log.Printf("Failed to close Kafka connection: %v", err)
+		}
+	}(reader)
 
 	w.Header().Set("Content-Type", "image/jpeg")
 	w.WriteHeader(http.StatusOK)
@@ -174,7 +188,10 @@ func (h *Handler) GetImageStatus(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(status)
+	err = json.NewEncoder(w).Encode(status)
+	if err != nil {
+		http.Error(w, "Failed to serve image", http.StatusInternalServerError)
+	}
 }
 
 func (h *Handler) DeleteImage(w http.ResponseWriter, r *http.Request) {
@@ -193,7 +210,10 @@ func (h *Handler) DeleteImage(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{
+	err = json.NewEncoder(w).Encode(map[string]string{
 		"message": "Image deleted successfully",
 	})
+	if err != nil {
+		http.Error(w, "Failed to serve image", http.StatusInternalServerError)
+	}
 }
