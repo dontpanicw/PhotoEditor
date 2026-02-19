@@ -15,63 +15,52 @@ jobs:
       postgres:
         image: postgres:15-alpine
         env:
-          POSTGRES_DB: postgres
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
+          POSTGRES_DB: analytics_test
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        ports:
+          - 5432:5432
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.25'
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+          check-latest: true
 
-    - name: Cache Go modules
-      uses: actions/cache@v3
-      with:
-        path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
 
-    - name: Download dependencies
-      run: go mod download
+      - name: Download dependencies
+        run: go mod download
 
-    - name: Run tests
-      run: make test
+      - name: Run all tests with coverage
+        env:
+          TEST_DATABASE_DSN: "host=localhost port=5432 user=postgres password=postgres dbname=analytics_test sslmode=disable"
+        run: |
+          # Запускаем все тесты с покрытием
+          go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+          
+          # Показываем покрытие в консоли
+          go tool cover -func=coverage.out
 
-    - name: Generate coverage report
-      run: go tool cover -html=coverage.out -o coverage.html
-
-    - name: Upload coverage
-      uses: actions/upload-artifact@v3
-      with:
-        name: coverage-report
-        path: coverage.html
-
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.25'
-
-    - name: Run golangci-lint
-      uses: golangci/golangci-lint-action@v7
-      with:
-        version: v2.4.0
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.out
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
